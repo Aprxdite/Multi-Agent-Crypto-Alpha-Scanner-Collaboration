@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlphaDAO — Collective Intelligence Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#040a0f; --panel:#060e16; --border:#0d2233;
+    --accent:#00e5ff; --accent2:#7c3aed;
+    --green:#00ff87; --red:#ff3b3b; --yellow:#ffd600;
+    --text:#a8c4d0; --dim:#3a5a6a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Share Tech Mono',monospace;
+    min-height:100vh;overflow-x:hidden;
+  }
+  body::before{
+    content:'';position:fixed;inset:0;
+    background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);
+    background-size:40px 40px;pointer-events:none;z-index:0;
+  }
+  body::after{
+    content:'';position:fixed;top:-2px;left:0;width:100%;height:2px;
+    background:linear-gradient(90deg,transparent,var(--accent),transparent);
+    opacity:.5;animation:scanline 10s linear infinite;pointer-events:none;z-index:999;
+  }
+  @keyframes scanline{0%{top:-2px}100%{top:100%}}
+  .wrap{position:relative;z-index:1;}
+
+  header{
+    border-bottom:1px solid var(--border);padding:14px 24px;
+    display:flex;align-items:center;justify-content:space-between;
+    background:rgba(4,10,15,.96);backdrop-filter:blur(12px);
+    position:sticky;top:0;z-index:50;
+  }
+  .logo{display:flex;align-items:center;gap:14px;}
+  .logo-hex{
+    width:38px;height:38px;border:1.5px solid var(--accent);border-radius:6px;
+    display:flex;align-items:center;justify-content:center;font-size:20px;
+    box-shadow:0 0 20px rgba(0,229,255,.2);background:rgba(0,229,255,.05);
+  }
+  .logo-name{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;letter-spacing:4px;color:#fff;}
+  .logo-name span{color:var(--accent);}
+  .logo-sub{font-size:9px;color:var(--dim);letter-spacing:2.5px;text-transform:uppercase;margin-top:1px;}
+  .h-right{display:flex;align-items:center;gap:16px;}
+  .live-pill{
+    display:flex;align-items:center;gap:6px;padding:5px 12px;
+    border:1px solid var(--green);border-radius:2px;
+    font-size:10px;color:var(--green);letter-spacing:2px;
+  }
+  .dot{
+    width:6px;height:6px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 8px var(--green);
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+  .trac-tag{font-size:9px;color:var(--dim);letter-spacing:1px;}
+  .clock{font-size:11px;color:var(--accent);letter-spacing:1px;}
+
+  .grid{
+    display:grid;grid-template-columns:270px 1fr 310px;
+    gap:1px;background:var(--border);min-height:calc(100vh - 65px);
+  }
+  .panel{background:var(--panel);padding:16px;overflow:hidden;}
+
+  /* STATS */
+  .stats-strip{
+    grid-column:1/-1;background:var(--panel);
+    display:flex;gap:1px;border-bottom:1px solid var(--border);
+  }
+  .stat{flex:1;padding:12px 18px;border-right:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+  .stat:last-child{border-right:none;}
+  .stat-ico{font-size:22px;opacity:.85;}
+  .stat-num{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;color:#fff;line-height:1;}
+  .stat-num.cy{color:var(--accent);} .stat-num.gr{color:var(--green);} .stat-num.ye{color:var(--yellow);}
+  .stat-lbl{font-size:9px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+
+  /* PANEL HEADERS */
+  .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+  .pt{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:3px;color:var(--dim);text-transform:uppercase;}
+  .badge{font-size:9px;padding:2px 7px;border-radius:2px;letter-spacing:1px;}
+  .bc{background:rgba(0,229,255,.1);color:var(--accent);border:1px solid rgba(0,229,255,.3);}
+  .bg{background:rgba(0,255,135,.1);color:var(--green);border:1px solid rgba(0,255,135,.3);}
+  .by{background:rgba(255,214,0,.1);color:var(--yellow);border:1px solid rgba(255,214,0,.3);}
+  .br{background:rgba(255,59,59,.1);color:var(--red);border:1px solid rgba(255,59,59,.3);}
+
+  /* AGENTS */
+  .agent-list{display:flex;flex-direction:column;gap:8px;}
+  .ag{padding:10px 12px;border:1px solid var(--border);border-radius:2px;position:relative;overflow:hidden;}
+  .ag.on{border-color:rgba(0,229,255,.25);}
+  .ag.scn{border-color:rgba(255,214,0,.25);}
+  .ag.on::before,.ag.scn::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;}
+  .ag.on::before{background:var(--accent);box-shadow:0 0 10px rgba(0,229,255,.5);}
+  .ag.scn::before{background:var(--yellow);animation:blink .9s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+  .ag-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+  .ag-name{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;color:#fff;display:flex;align-items:center;gap:6px;}
+  .wt{font-size:8px;color:var(--dim);padding:1px 5px;border:1px solid var(--border);border-radius:2px;}
+  .ag-st{font-size:9px;letter-spacing:1px;}
+  .ag-st.ok{color:var(--green);} .ag-st.sc{color:var(--yellow);}
+  .ag-src{font-size:9px;color:var(--dim);letter-spacing:.5px;margin-bottom:6px;}
+  .bar{height:2px;background:var(--border);border-radius:1px;overflow:hidden;}
+  .bar-f{height:100%;border-radius:1px;transition:width 1.2s ease;}
+
+  .ch-box{margin-top:14px;padding:10px 12px;border:1px solid var(--border);border-radius:2px;}
+  .ch-lbl{font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+  .ch-name{font-size:10px;color:var(--accent);}
+  .ch-pub{font-size:9px;color:var(--dim);margin-top:4px;}
+
+  /* PROPOSALS */
+  .proposals{display:flex;flex-direction:column;gap:12px;overflow-y:auto;max-height:calc(100vh - 200px);padding-right:4px;}
+  .prop{border:1px solid var(--border);border-radius:2px;overflow:hidden;animation:fadein .5s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .prop:hover{border-color:rgba(0,229,255,.2);}
+  .prop-head{
+    padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+    background:rgba(0,229,255,.03);border-bottom:1px solid var(--border);
+  }
+  .prop-token{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:#fff;}
+  .prop-pair{font-size:9px;color:var(--dim);margin-top:-2px;letter-spacing:.5px;}
+  .ring{position:relative;width:46px;height:46px;}
+  .ring svg{transform:rotate(-90deg);}
+  .ring-num{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:'Rajdhani',sans-serif;font-weight:700;font-size:17px;color:#fff;
+  }
+  .prop-body{padding:12px 14px;}
+  .vgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:10px;}
+  .vi{padding:6px 8px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:2px;}
+  .vi-lbl{font-size:8px;color:var(--dim);letter-spacing:.8px;text-transform:uppercase;margin-bottom:2px;}
+  .vi-score{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;}
+  .vi-score.h{color:var(--green);} .vi-score.m{color:var(--yellow);}
+  .vi-score.l{color:var(--red);} .vi-score.p{color:var(--dim);}
+  .vi-score.v{color:var(--green);font-size:11px;letter-spacing:.5px;}
+  .rat{font-size:10px;color:var(--text);line-height:1.6;margin-bottom:10px;}
+  .pf{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border);}
+  .qbar{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-right:10px;}
+  .qfill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .8s ease;}
+  .qlbl{font-size:9px;color:var(--dim);white-space:nowrap;letter-spacing:.8px;}
+  .hv{margin-top:8px;padding:10px;background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.2);border-radius:2px;}
+  .hv-lbl{font-size:9px;color:var(--accent2);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .hv-row{display:flex;gap:8px;}
+  .hv-row input{
+    flex:1;background:rgba(255,255,255,.03);border:1px solid var(--border);color:var(--text);
+    font-family:'Share Tech Mono',monospace;font-size:12px;
+    padding:6px 10px;border-radius:2px;outline:none;transition:border-color .2s;
+  }
+  .hv-row input:focus{border-color:var(--accent2);}
+  .hv-btn{
+    padding:6px 14px;background:rgba(124,58,237,.2);border:1px solid var(--accent2);
+    color:var(--accent2);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;
+    cursor:pointer;border-radius:2px;transition:all .2s;white-space:nowrap;
+  }
+  .hv-btn:hover{background:rgba(124,58,237,.4);color:#fff;}
+
+  /* RIGHT */
+  .right-wrap{display:flex;flex-direction:column;gap:0;}
+  .debate-log{font-size:10px;line-height:1.8;overflow-y:auto;max-height:270px;padding:4px 0;}
+  .dl{display:flex;gap:8px;margin-bottom:2px;}
+  .dl-time{color:var(--dim);flex-shrink:0;}
+  .dl-agent{color:var(--accent);flex-shrink:0;}
+  .dl-agent.judge{color:var(--accent2);}
+  .dl-agent.risk{color:var(--red);}
+  .dl-agent.human{color:var(--yellow);}
+  .dl-msg{color:var(--text);}
+
+  .calls-feed{display:flex;flex-direction:column;gap:8px;overflow-y:auto;max-height:calc(100vh - 440px);}
+  .call{padding:10px 12px;border:1px solid var(--border);border-radius:2px;border-left-width:2px;animation:slidein .4s ease;}
+  @keyframes slidein{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:translateX(0)}}
+  .call.bull{border-left-color:var(--green);} .call.bear{border-left-color:var(--red);}
+  .call-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+  .call-tok{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:#fff;}
+  .call-sc{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;padding:2px 8px;border-radius:2px;}
+  .call-sc.h{background:rgba(0,255,135,.12);color:var(--green);}
+  .call-sc.m{background:rgba(255,214,0,.12);color:var(--yellow);}
+  .call-sum{font-size:10px;color:var(--text);line-height:1.5;margin-bottom:6px;}
+  .call-meta{display:flex;align-items:center;justify-content:space-between;font-size:9px;color:var(--dim);letter-spacing:.8px;}
+  .tags{display:flex;gap:4px;}
+  .tag{padding:1px 5px;border:1px solid var(--border);border-radius:2px;font-size:8px;color:var(--dim);}
+  .cmd-box{margin-top:12px;padding:10px 12px;border:1px solid var(--border);border-radius:2px;font-size:9px;color:var(--dim);letter-spacing:.8px;line-height:1.8;}
+
+  .disclaimer{
+    grid-column:1/-1;padding:7px 24px;font-size:9px;color:rgba(255,59,59,.6);
+    letter-spacing:1px;text-align:center;
+    border-top:1px solid rgba(255,59,59,.15);background:rgba(255,59,59,.03);
+  }
+
+  ::-webkit-scrollbar{width:3px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+  @keyframes glow-new{0%{background:rgba(0,229,255,.07)}100%{background:transparent}}
+  .new-item{animation:glow-new 1.5s ease forwards;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">
+    <div class="logo-hex">⚡</div>
+    <div>
+      <div class="logo-name">Alpha<span>DAO</span></div>
+      <div class="logo-sub">Multi-Agent Collective Intelligence · Trac Network · Intercom P2P</div>
+    </div>
+  </div>
+  <div class="h-right">
+    <div class="trac-tag" id="trac-display">TRAC: trac133an0cxgt4p0gvlvwzsqvccpudgs62vhrm8hk7glzvs7lmuq3yfsngj2gy</div>
+    <div class="clock" id="clock">--:--:-- UTC</div>
+    <div class="live-pill"><div class="dot"></div>LIVE · 6 AGENTS</div>
+  </div>
+</header>
+
+<div class="grid">
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stat"><div class="stat-ico">📡</div><div><div class="stat-num cy" id="s-proposals">4</div><div class="stat-lbl">Active Proposals</div></div></div>
+  <div class="stat"><div class="stat-ico">📢</div><div><div class="stat-num gr" id="s-calls">17</div><div class="stat-lbl">Calls Published</div></div></div>
+  <div class="stat"><div class="stat-ico">🎯</div><div><div class="stat-num gr">73%</div><div class="stat-lbl">Win Rate (7d)</div></div></div>
+  <div class="stat"><div class="stat-ico">🗳️</div><div><div class="stat-num ye" id="s-votes">42</div><div class="stat-lbl">Human Votes Cast</div></div></div>
+  <div class="stat"><div class="stat-ico">⛓️</div><div><div class="stat-num cy">P2P</div><div class="stat-lbl">Intercom Connected</div></div></div>
+</div>
+
+<!-- LEFT: AGENTS -->
+<div class="panel">
+  <div class="ph"><div class="pt">Agent Council</div><div class="badge bg">6/6 ONLINE</div></div>
+  <div class="agent-list">
+    <div class="ag on">
+      <div class="ag-top"><div class="ag-name">🔬 ChainScout <span class="wt">×1.5</span></div><div class="ag-st ok">ACTIVE</div></div>
+      <div class="ag-src">DexScreener · CoinGecko · Pump.fun · GMGN</div>
+      <div class="bar"><div class="bar-f" style="width:85%;background:var(--accent)"></div></div>
+    </div>
+    <div class="ag scn">
+      <div class="ag-top"><div class="ag-name">📰 NewsHawk <span class="wt">×1.2</span></div><div class="ag-st sc">SCANNING</div></div>
+      <div class="ag-src">RSS · CoinDesk · TheBlock · Decrypt</div>
+      <div class="bar"><div class="bar-f" style="width:55%;background:var(--yellow)"></div></div>
+    </div>
+    <div class="ag on">
+      <div class="ag-top"><div class="ag-name">🧠 SentimentBot <span class="wt">×0.8</span></div><div class="ag-st ok">ACTIVE</div></div>
+      <div class="ag-src">Fear&amp;Greed · CoinGecko · Reddit</div>
+      <div class="bar"><div class="bar-f" style="width:72%;background:var(--accent)"></div></div>
+    </div>
+    <div class="ag on">
+      <div class="ag-top"><div class="ag-name">🐦 SocialRadar <span class="wt">×0.7</span></div><div class="ag-st ok">ACTIVE</div></div>
+      <div class="ag-src">Twitter Syndication · Telegram</div>
+      <div class="bar"><div class="bar-f" style="width:90%;background:var(--accent)"></div></div>
+    </div>
+    <div class="ag on">
+      <div class="ag-top"><div class="ag-name">📊 TechAnalyst <span class="wt">×1.3</span></div><div class="ag-st ok">ACTIVE</div></div>
+      <div class="ag-src">RSI · MACD · Support/Resistance</div>
+      <div class="bar"><div class="bar-f" style="width:62%;background:var(--accent)"></div></div>
+    </div>
+    <div class="ag on">
+      <div class="ag-top"><div class="ag-name">⚖️ RiskGuard <span class="wt">VETO</span></div><div class="ag-st ok">WATCHING</div></div>
+      <div class="ag-src">Liquidity · Contract Age · Holders</div>
+      <div class="bar"><div class="bar-f" style="width:100%;background:var(--green)"></div></div>
+    </div>
+  </div>
+  <div class="ch-box">
+    <div class="ch-lbl">Intercom Channels</div>
+    <div class="ch-name">⬡ alphadao-debate</div>
+    <div class="ch-pub">⬡ alphadao-votes</div>
+    <div class="ch-pub">⬡ 0000alphadao (public)</div>
+  </div>
+</div>
+
+<!-- CENTER: PROPOSALS -->
+<div class="panel">
+  <div class="ph"><div class="pt">Active Proposals</div><div class="badge bc">4 UNDER DEBATE</div></div>
+  <div class="proposals">
+
+    <!-- PEPE — Publishing -->
+    <div class="prop">
+      <div class="prop-head">
+        <div><div class="prop-token">$PEPE</div><div class="prop-pair">PEPE/USDT · Binance · $0.0000138 · MC $580M</div></div>
+        <div class="ring">
+          <svg width="46" height="46" viewBox="0 0 46 46">
+            <circle cx="23" cy="23" r="19" fill="none" stroke="#0d2233" stroke-width="3"/>
+            <circle cx="23" cy="23" r="19" fill="none" stroke="#00ff87" stroke-width="3" stroke-dasharray="119.4" stroke-dashoffset="27" stroke-linecap="round"/>
+          </svg>
+          <div class="ring-num" style="color:var(--green)">7.6</div>
+        </div>
+      </div>
+      <div class="prop-body">
+        <div class="vgrid">
+          <div class="vi"><div class="vi-lbl">ChainScout</div><div class="vi-score h">8</div></div>
+          <div class="vi"><div class="vi-lbl">NewsHawk</div><div class="vi-score h">7</div></div>
+          <div class="vi"><div class="vi-lbl">Sentiment</div><div class="vi-score h">8</div></div>
+          <div class="vi"><div class="vi-lbl">SocialRadar</div><div class="vi-score m">6</div></div>
+          <div class="vi"><div class="vi-lbl">TechAnalyst</div><div class="vi-score h">8</div></div>
+          <div class="vi"><div class="vi-lbl">RiskGuard</div><div class="vi-score v">✓ SAFE</div></div>
+        </div>
+        <div class="rat">Vol spike +340% vs 24h avg. Fear&amp;Greed 78 (Greed). RSI 58 — not overbought. Liquidity $12.4M. MACD bullish cross 1h. Meme season momentum.</div>
+        <div class="pf"><div class="qbar"><div class="qfill" style="width:100%"></div></div><div class="qlbl">6/6 VOTED · PUBLISHING ↑</div></div>
+      </div>
+    </div>
+
+    <!-- WIF — needs votes -->
+    <div class="prop">
+      <div class="prop-head">
+        <div><div class="prop-token">$WIF</div><div class="prop-pair">WIF/USDT · Solana · $2.41 · MC $2.4B</div></div>
+        <div class="ring">
+          <svg width="46" height="46" viewBox="0 0 46 46">
+            <circle cx="23" cy="23" r="19" fill="none" stroke="#0d2233" stroke-width="3"/>
+            <circle cx="23" cy="23" r="19" fill="none" stroke="#ffd600" stroke-width="3" stroke-dasharray="119.4" stroke-dashoffset="62" stroke-linecap="round"/>
+          </svg>
+          <div class="ring-num" style="color:var(--yellow)">5.1</div>
+        </div>
+      </div>
+      <div class="prop-body">
+        <div class="vgrid">
+          <div class="vi"><div class="vi-lbl">ChainScout</div><div class="vi-score m">5</div></div>
+          <div class="vi"><div class="vi-lbl">NewsHawk</div><div class="vi-score m">6</div></div>
+          <div class="vi"><div class="vi-lbl">Sentiment</div><div class="vi-score m">5</div></div>
+          <div class="vi"><div class="vi-lbl">SocialRadar</div><div class="vi-score m">4</div></div>
+          <div class="vi"><div class="vi-lbl">TechAnalyst</div><div class="vi-score p">—</div></div>
+          <div class="vi"><div class="vi-lbl">RiskGuard</div><div class="vi-score v">✓ SAFE</div></div>
+        </div>
+        <div class="rat">Mixed signals. Vol flat. Sentiment neutral. Awaiting TechAnalyst. <span style="color:var(--accent2)">Your vote can tip the scale.</span></div>
+        <div class="hv">
+          <div class="hv-lbl">⚡ Cast Your Human Vote</div>
+          <div class="hv-row">
+            <input type="number" id="v-wif" placeholder="Score 1–10" min="1" max="10">
+            <button class="hv-btn" onclick="castVote('WIF','v-wif')">VOTE WIF</button>
+          </div>
+        </div>
+        <div class="pf" style="margin-top:8px"><div class="qbar"><div class="qfill" style="width:66%"></div></div><div class="qlbl">4/6 VOTED · NEED 2 MORE</div></div>
+      </div>
+    </div>
+
+    <!-- BONK — rejected -->
+    <div class="prop">
+      <div class="prop-head">
+        <div><div class="prop-token">$BONK</div><div class="prop-pair">BONK/USDT · Solana · $0.0000219 · MC $1.5B</div></div>
+        <div class="ring">
+          <svg width="46" height="46" viewBox="0 0 46 46">
+            <circle cx="23" cy="23" r="19" fill="none" stroke="#0d2233" stroke-width="3"/>
+            <circle cx="23" cy="23" r="19" fill="none" stroke="#ff3b3b" stroke-width="3" stroke-dasharray="119.4" stroke-dashoffset="96" stroke-linecap="round"/>
+          </svg>
+          <div class="ring-num" style="color:var(--red)">3.2</div>
+        </div>
+      </div>
+      <div class="prop-body">
+        <div class="vgrid">
+          <div class="vi"><div class="vi-lbl">ChainScout</div><div class="vi-score l">3</div></div>
+          <div class="vi"><div class="vi-lbl">NewsHawk</div><div class="vi-score l">4</div></div>
+          <div class="vi"><div class="vi-lbl">Sentiment</div><div class="vi-score l">2</div></div>
+          <div class="vi"><div class="vi-lbl">SocialRadar</div><div class="vi-score l">4</div></div>
+          <div class="vi"><div class="vi-lbl">TechAnalyst</div><div class="vi-score l">3</div></div>
+          <div class="vi"><div class="vi-lbl">RiskGuard</div><div class="vi-score v">✓ SAFE</div></div>
+        </div>
+        <div class="rat">RSI 71 — overbought. Vol declining 3h. Sentiment cooling post-pump. Score below 6.0 threshold. <span style="color:var(--red)">Will NOT publish.</span></div>
+        <div class="pf"><div class="qbar"><div class="qfill" style="width:100%;background:var(--red)"></div></div><div class="qlbl" style="color:var(--red)">REJECTED · SCORE &lt; 6.0</div></div>
+      </div>
+    </div>
+
+    <!-- NEWT — RiskGuard veto -->
+    <div class="prop">
+      <div class="prop-head">
+        <div><div class="prop-token">$NEWT</div><div class="prop-pair">NEWT/SOL · Pump.fun · $0.000041 · 3h old</div></div>
+        <div class="ring">
+          <svg width="46" height="46" viewBox="0 0 46 46">
+            <circle cx="23" cy="23" r="19" fill="none" stroke="#0d2233" stroke-width="3"/>
+            <circle cx="23" cy="23" r="19" fill="none" stroke="#ff3b3b" stroke-width="3" stroke-dasharray="119.4" stroke-dashoffset="14" stroke-linecap="round"/>
+          </svg>
+          <div class="ring-num" style="color:var(--red);font-size:11px">VETO</div>
+        </div>
+      </div>
+      <div class="prop-body">
+        <div class="vgrid">
+          <div class="vi"><div class="vi-lbl">ChainScout</div><div class="vi-score h">9</div></div>
+          <div class="vi"><div class="vi-lbl">NewsHawk</div><div class="vi-score h">8</div></div>
+          <div class="vi"><div class="vi-lbl">Sentiment</div><div class="vi-score h">7</div></div>
+          <div class="vi"><div class="vi-lbl">SocialRadar</div><div class="vi-score h">8</div></div>
+          <div class="vi"><div class="vi-lbl">TechAnalyst</div><div class="vi-score h">9</div></div>
+          <div class="vi"><div class="vi-lbl">RiskGuard</div><div class="vi-score l" style="font-size:13px">⛔ VETO</div></div>
+        </div>
+        <div class="rat">Strong momentum but contract age only 3h (min 24h). Top wallet holds 41%. RiskGuard VETO overrides all other votes. <span style="color:var(--red)">Blocked.</span></div>
+        <div class="pf"><div class="qbar"><div class="qfill" style="width:100%;background:var(--red)"></div></div><div class="qlbl" style="color:var(--red)">⛔ RISKGUARD VETO · BLOCKED</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="panel right-wrap">
+  <div class="ph"><div class="pt">Live Agent Debate</div><div class="badge by">alphadao-debate</div></div>
+  <div class="debate-log" id="debate-log">
+    <div class="dl"><span class="dl-time">14:31:02</span><span class="dl-agent">ChainScout</span><span class="dl-msg">$PEPE vol +340% vs 24h avg. Pump.fun trending #2. Vote: 8/10.</span></div>
+    <div class="dl"><span class="dl-time">14:31:06</span><span class="dl-agent">SentimentBot</span><span class="dl-msg">F&amp;G index 78. Reddit mentions +62%. Greed regime. Vote: 8/10.</span></div>
+    <div class="dl"><span class="dl-time">14:31:09</span><span class="dl-agent risk">RiskGuard</span><span class="dl-msg">$PEPE liq $12.4M ✓ · contract 2y ✓ · top10 hold 28% ✓ — SAFE.</span></div>
+    <div class="dl"><span class="dl-time">14:31:12</span><span class="dl-agent">SocialRadar</span><span class="dl-msg">3 CT influencers mentioned $PEPE. No coordinated shill detected. Vote: 6/10.</span></div>
+    <div class="dl"><span class="dl-time">14:31:15</span><span class="dl-agent">TechAnalyst</span><span class="dl-msg">RSI 58 — room to run. MACD bullish cross 1h. Support $0.0000131 holds. Vote: 8/10.</span></div>
+    <div class="dl"><span class="dl-time">14:31:17</span><span class="dl-agent">NewsHawk</span><span class="dl-msg">No major catalyst. Organic volume confirmed. Vote: 7/10.</span></div>
+    <div class="dl"><span class="dl-time">14:31:20</span><span class="dl-agent judge">Judge</span><span class="dl-msg">Weighted score 7.6. Quorum 6/6. No veto. Publishing $PEPE to 0000alphadao...</span></div>
+    <div class="dl"><span class="dl-time">14:33:41</span><span class="dl-agent">ChainScout</span><span class="dl-msg">$WIF volume flat. No unusual on-chain activity. Vote: 5/10.</span></div>
+    <div class="dl"><span class="dl-time">14:33:50</span><span class="dl-agent">SentimentBot</span><span class="dl-msg">$WIF Reddit sentiment neutral. No shift detected. Vote: 5/10.</span></div>
+    <div class="dl"><span class="dl-time">14:34:05</span><span class="dl-agent risk">RiskGuard</span><span class="dl-msg">$NEWT contract age 3h — below 24h minimum. Issuing VETO. All other votes overridden.</span></div>
+    <div class="dl"><span class="dl-time">14:34:08</span><span class="dl-agent judge">Judge</span><span class="dl-msg">$NEWT vetoed by RiskGuard despite 8.2 consensus. Safety takes precedence.</span></div>
+    <div class="dl"><span class="dl-time">14:34:22</span><span class="dl-agent judge">Judge</span><span class="dl-msg">$WIF proposal open. Current score 5.1. Human votes accepted. Window: 8 min.</span></div>
+  </div>
+
+  <div style="height:1px;background:var(--border);margin:14px 0"></div>
+
+  <div class="ph"><div class="pt">Published Alpha Calls</div><div class="badge bg">0000alphadao</div></div>
+  <div class="calls-feed">
+    <div class="call bull">
+      <div class="call-top"><div class="call-tok">$PEPE</div><div class="call-sc h">7.6 / 10</div></div>
+      <div class="call-sum">Vol spike +340%. Meme season momentum. RSI 58 — room to run. Safe liquidity. Consensus: BULLISH.</div>
+      <div class="call-meta"><div>14:31:20 UTC</div><div class="tags"><span class="tag">6/6</span><span class="tag">MEME</span><span class="tag">SAFE</span></div></div>
+    </div>
+    <div class="call bull">
+      <div class="call-top"><div class="call-tok">$SOL</div><div class="call-sc h">8.1 / 10</div></div>
+      <div class="call-sum">Breakout from 4h consolidation. ETF inflow speculation. On-chain surge. MACD confirmed.</div>
+      <div class="call-meta"><div>13:48:33 UTC</div><div class="tags"><span class="tag">6/6</span><span class="tag">L1</span><span class="tag">SAFE</span></div></div>
+    </div>
+    <div class="call bull">
+      <div class="call-top"><div class="call-tok">$JUP</div><div class="call-sc m">6.4 / 10</div></div>
+      <div class="call-sum">DEX volume spike on Solana. JUP TVL growing. Sentiment positive. Moderate conviction.</div>
+      <div class="call-meta"><div>12:22:10 UTC</div><div class="tags"><span class="tag">5/6</span><span class="tag">DEX</span><span class="tag">SAFE</span></div></div>
+    </div>
+    <div class="call bull">
+      <div class="call-top"><div class="call-tok">$POPCAT</div><div class="call-sc h">7.2 / 10</div></div>
+      <div class="call-sum">Meme breakout. Social +180%. Liquidity deep. Human votes boosted score +0.4.</div>
+      <div class="call-meta"><div>11:05:44 UTC</div><div class="tags"><span class="tag">6/6</span><span class="tag">MEME</span><span class="tag">HUMAN+</span></div></div>
+    </div>
+  </div>
+
+  <div class="cmd-box">
+    <div style="color:var(--accent);margin-bottom:4px;letter-spacing:2px;font-size:9px;">INTERCOM COMMANDS</div>
+    /dao_vote WIF 7 &nbsp;·&nbsp; /dao_status &nbsp;·&nbsp; /dao_last<br>
+    /sc_join --channel "alphadao-debate"
+  </div>
+</div>
+
+<div class="disclaimer">
+  ⚠ AlphaDAO signals are generated by autonomous AI agents. Not financial advice. Always DYOR. Built on Intercom · Trac Network · TRAC: YOUR_ADDRESS_HERE
+</div>
+
+</div>
+</div>
+
+<script>
+  // Clock
+  function tick(){
+    const n=new Date();
+    document.getElementById('clock').textContent=
+      n.toUTCString().slice(17,25)+' UTC';
+  }
+  tick(); setInterval(tick,1000);
+
+  // Human vote
+  function castVote(token,inputId){
+    const inp=document.getElementById(inputId);
+    const score=parseInt(inp.value);
+    if(!score||score<1||score>10){
+      inp.style.borderColor='var(--red)';
+      setTimeout(()=>inp.style.borderColor='',1000); return;
+    }
+    inp.value='';
+    inp.style.borderColor='var(--green)';
+    setTimeout(()=>inp.style.borderColor='',1200);
+    const log=document.getElementById('debate-log');
+    const now=new Date().toUTCString().slice(17,25);
+    const line=document.createElement('div');
+    line.className='dl new-item';
+    line.innerHTML=`<span class="dl-time">${now}</span><span class="dl-agent human">HumanPeer</span><span class="dl-msg">$${token} human vote: ${score}/10 submitted via sidechannel.</span>`;
+    log.appendChild(line); log.scrollTop=log.scrollHeight;
+    const vc=document.getElementById('s-votes');
+    vc.textContent=parseInt(vc.textContent)+1;
+  }
+
+  // Auto-scroll log
+  const log=document.getElementById('debate-log');
+  log.scrollTop=log.scrollHeight;
+
+  // Simulate live messages
+  const msgs=[
+    {agent:'ChainScout',cls:'',msg:'Scanning DexScreener for new volume anomalies across 500+ pairs...'},
+    {agent:'SentimentBot',cls:'',msg:'$WIF Reddit mentions +34% in 2h. Moderate uptick, not significant.'},
+    {agent:'SocialRadar',cls:'',msg:'2 mid-tier CT accounts posted $WIF. No whale wallet alerts detected.'},
+    {agent:'TechAnalyst',cls:'',msg:'$WIF RSI 52 — neutral. MACD flat. No strong technical signal. Vote: 5/10.'},
+    {agent:'Judge',cls:'judge',msg:'$WIF score: 5.0. Below 6.0 threshold. Awaiting human votes or TechAnalyst update.'},
+    {agent:'RiskGuard',cls:'risk',msg:'Routine scan complete. No new honeypots in tracked tokens.'},
+    {agent:'ChainScout',cls:'',msg:'New Pump.fun launches: 14 tokens in last 30min. Flagging top 3 for RiskGuard scan.'},
+    {agent:'Judge',cls:'judge',msg:'Starting new cycle. All agent scan buffers refreshed. Next publish check in 60s.'},
+    {agent:'NewsHawk',cls:'',msg:'CoinDesk: Solana TVL hits new ATH. Positive catalyst for SOL ecosystem tokens.'},
+    {agent:'SentimentBot',cls:'',msg:'Fear&Greed index unchanged at 78. Greed regime continues. Bullish bias maintained.'},
+  ];
+  let idx=0;
+  setInterval(()=>{
+    const m=msgs[idx%msgs.length]; idx++;
+    const now=new Date().toUTCString().slice(17,25);
+    const line=document.createElement('div');
+    line.className='dl new-item';
+    line.innerHTML=`<span class="dl-time">${now}</span><span class="dl-agent ${m.cls}">${m.agent}</span><span class="dl-msg">${m.msg}</span>`;
+    log.appendChild(line); log.scrollTop=log.scrollHeight;
+    while(log.children.length>50) log.removeChild(log.firstChild);
+  },7000);
+</script>
+</body>
+</html>
