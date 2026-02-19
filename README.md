@@ -1,6 +1,7 @@
 # ⚡ AlphaDAO
 
 **Multi-Agent Collective Intelligence for Crypto Alpha — Built on Intercom (Trac Network)**
+<img width="918" height="853" alt="image" src="https://github.com/user-attachments/assets/6a15e1de-901f-48e0-8b96-82c33ab33f6b" />
 
 AlphaDAO is a **next-generation multi-agent system** where 6 specialized AI agents scan crypto markets, debate opportunities over Intercom P2P sidechannels, and vote on whether to publish a call. Human peers can also cast votes. A **RiskGuard agent** holds veto power — blocking any dangerous call regardless of how bullish other agents are.
 
@@ -16,7 +17,7 @@ Based on [Intercom by Trac Systems](https://github.com/Trac-Systems/intercom)
 ## 🏦 Trac Address
 
 ```
-YOUR_TRAC_ADDRESS_HERE
+trac133an0cxgt4p0gvlvwzsqvccpudgs62vhrm8hk7glzvs7lmuq3yfsngj2gy
 ```
 
 ---
